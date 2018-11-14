@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+	<title>Simple Wall</title>
+
+</head>
+
+
+
+<style type="text/css">
+
+*{
+	width: 100%;
+}
+
+p {
+	display: inline-block;
+	text-align: right;
+	margin-left: -10%;
+	vertical-align: top;
+
+}
+
+.top{
+
+	background-color: black;
+	color:white;
+	height: 100px;
+	vertical-align: top;
+}
+
+.inbox {
+
+	height: 500px;
+	width: 50%;
+	display: inline-block;
+	vertical-align: top;
+	text-align: center;
+}
+
+.sendmessages {
+	height: 500px;
+	width: 48%;
+	display:inline-block;
+	vertical-align: top;
+	text-align: center;
+
+}
+
+.form input{
+	width: 380px;
+	height: 50px;
+	display: inline-block;
+
+}
+ button{
+	width: 50px;
+	height: 30px;
+	display: inline-block;
+
+}
+
+img{
+	max-width: 20px;
+	background-image:cover;
+
+}
+
+
+</style>
+
+<body>
+
+	<div class = "top">
+
+		CodingDojo Wall (Simplified)
+
+		<p>Welcome {{ name }}!</p> <a href="/logout">Logout</a>
+
+	</div>
+
+
+		<div class = "inbox">
+
+		<h>{{ totalreceivedmessages }} Message(s) for you {{ name }}</h>
+
+		{% for message in messages %}
+
+		<p> {{ message["sender"] }} said ({{ message["date_created"]|duration_elapsed }}):<p>
+		<p> {{ message["message"] }} </p>
+
+		<a href = "/delete/{{ message['idmessages'] }}"><img src="{{ url_for('static', filename='img/asdf.png') }}">
+		</a>
+
+		{% endfor %}
+
+	</div>
+
+
+
+	<div class = "sendmessages">
+
+		<h>Send a message</h>
+
+		<p>You have sent a total of {{ totalsentmessages }} messages so far.</p>
+
+		
+		{% for friend in friends %}
+
+		<form action="/sendmessage" method = "post">
+
+		<div class="form">
+
+		{{ friend["first_name"] }} <input type="text" name = "message"> 
+
+		<input type = "hidden" name = "recepientID" value = "{{ friend['idUsers'] }}"> 
+
+		<button type="submit"> Send</button>
+
+		</div>
+
+		</form>
+
+		{% endfor %}
+
+	</div>
+
+
+
+
+</html>
