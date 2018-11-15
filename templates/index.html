@@ -15,11 +15,18 @@
 
 <style type="text/css">
 
+
+
 .container{
+
 	width: 460px;
 	vertical-align: top;
 	display: inline-block;
-
+	outline: 2px solid black;
+	height:500%;
+	padding: 3%;
+	margin-left:2%;
+	margin-top: 6%;
 }
 
 
@@ -55,6 +62,8 @@ label{
 </style>
 
 <body>
+
+Welcome!
 
 {% with messages = get_flashed_messages(category_filter=['flashlogout']) %}
 {% if messages %}
