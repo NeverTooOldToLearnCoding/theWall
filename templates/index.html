@@ -26,7 +26,7 @@
 	height:500%;
 	padding: 3%;
 	margin-left:2%;
-	margin-top: 6%;
+	margin-top: 2%;
 }
 
 
@@ -58,13 +58,21 @@ label{
 
 	width: 200px;
 }
+
+.welcome{
+	padding-left: 1.5%;
+	padding-top: 1%;
+	font-size: 30px;
+
+}
 	
 </style>
 
 <body>
 
+<div class = "welcome">
 Welcome!
-
+</div>
 {% with messages = get_flashed_messages(category_filter=['flashlogout']) %}
 {% if messages %}
 {% for message in messages %}

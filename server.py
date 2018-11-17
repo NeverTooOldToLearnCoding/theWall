@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, flash
-from flask_bcrypt import Bcrypt
+# from flask_bcrypt import Bcrypt
 from mysqlconnection import connectToMySQL
 import re
 import copy
@@ -9,7 +9,7 @@ EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.+_-]+\.[a-zA-z]+$')
 
 app=Flask(__name__)
 app.secret_key = "ThisIsASecret"
-bcrypt = Bcrypt(app)     # we are creating an object called bcrypt, 
+#bcrypt = Bcrypt(app)     # we are creating an object called bcrypt, 
                          # which is made by invoking the function Bcrypt with our app as an argument
 
 @app.template_filter('duration_elapsed')
@@ -115,7 +115,9 @@ def logincheck():
 		session["last_name"] = request.form["last_name"]
 		session["loggedin"] = True
 
-		pw_hash = bcrypt.generate_password_hash(request.form['password'])
+		#pw_hash = bcrypt.generate_password_hash(request.form['password'])
+
+		pw_hash = request.form['password']
 
 		mysql = connectToMySQL('mydb')
 		query2 = "insert into users (idUsers,first_name,last_name,emails,password,date_created,last_updated) values (idUsers,%(first_name)s, %(last_name)s,%(emails)s,%(password_hash)s,now(),now())"
@@ -149,7 +151,8 @@ def login():
 	# print (result)
 
 	if result:
-		if bcrypt.check_password_hash(result[0]['password'], request.form['password']):
+		if result[0]['password'] == request.form['password']:
+		#if bcrypt.check_password_hash(result[0]['password'], request.form['password']):
 		# if we get True after checking the password, we may put the user id in session
 			session['userid'] = result[0]['idUsers']
 			session["first_name"] = result[0]["first_name"]
@@ -175,44 +178,46 @@ def success():
 def thewall():
 
 
-	#used for for loop in HTML to display all messages received from friends
+	#shows all messages and the users who sent them
 	mysql = connectToMySQL("mydb")
-	query = "select messages.idmessages, messages.message, users.first_name as sender, messages.date_created, timediff(Now(), messages.date_created) as timeago from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
-	
-	data = {
-	"sessionid" : session["userid"]
-	}
-	messages = mysql.query_db(query,data)
+	query = "select * from messages inner join users on users.idUsers = messages.sender_id"
+	messages = mysql.query_db(query)
 
+	#shows all comments made on each message
+	mysql = connectToMySQL("mydb")
+	query = "select * from comments inner join messages on comments.message_id = messages.idmessages inner join users on comments.user_id = users.idUsers order by comments.created_at asc"
+	comments = mysql.query_db(query)
 
 	#counts number of messages received
-	mysql = connectToMySQL("mydb")
-	query = "select count(message) as Total  from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
-	data = {
-	"sessionid" : session["userid"]
-	}
-	totalreceivedmessages = mysql.query_db(query,data)
+	# mysql = connectToMySQL("mydb")
+	# query = "select count(message) as Total  from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
+	# data = {
+	# "sessionid" : session["userid"]
+	# }
+	# totalreceivedmessages = mysql.query_db(query,data)
 	
 	#used for for statement to display all users in db on right side
-	mysql = connectToMySQL("mydb")
-	query = "select * from users where idUsers <> %(sessionid)s;"
-	data = {
-	"sessionid" : session["userid"]
-	}
-	friends = mysql.query_db(query,data)
+	# mysql = connectToMySQL("mydb")
+	# query = "select * from users where idUsers <> %(sessionid)s;"
+	# data = {
+	# "sessionid" : session["userid"]
+	# }
+	# friends = mysql.query_db(query,data)
 
 	#used for for statement to display total messages sent
-	mysql = connectToMySQL("mydb")
-	query = "select count(message) as Total from messages where sender_id = %(sessionid)s;"
-	data = {
-	"sessionid" : session["userid"]
-	}
+	# mysql = connectToMySQL("mydb")
+	# query = "select count(message) as Total from messages where sender_id = %(sessionid)s;"
+	# data = {
+	# "sessionid" : session["userid"]
+	# }
 
-	totalsentmessages = mysql.query_db(query,data)
+	# totalsentmessages = mysql.query_db(query,data)
 
 	# querys a user's messages received from friends in a database
 
-	return render_template("thewall.html", name = session["first_name"],messages = messages, friends = friends, totalsentmessages = totalsentmessages[0]['Total'],totalreceivedmessages = totalreceivedmessages[0]['Total'] )
+	return render_template("thewall.html",messages = messages, comments = comments)
+
+	# friends = friends, totalsentmessages = totalsentmessages[0]['Total'],totalreceivedmessages = totalreceivedmessages[0]['Total']
 
 @app.route("/sendmessage", methods = ["POST"])
 

@@ -19,59 +19,43 @@
 	width: 100%;
 }
 
-p {
-	display: inline-block;
-	text-align: right;
-	margin-left: -10%;
-	vertical-align: top;
-
-}
-
 .top{
+	width: 100%;
+	height: 30%;
+	outline: 2px solid black;
 
-	background-color: black;
-	color:white;
+}
+
+.top p{
+	text-align: right;
+	padding-right: 20px;
+
+
+}
+
+.bottom{
+	width: 90%;
+	height: 70%;
+	text-align: left;
+	margin-left: 70px;
+	margin-top:40px;
+
+}
+
+
+.bottom textarea{
 	height: 100px;
-	vertical-align: top;
+	width: 90%;
 }
 
-.inbox {
-
-	height: 500px;
-	width: 50%;
-	display: inline-block;
-	vertical-align: top;
-	text-align: center;
+.bottom button{
+	width: 140px;
+	height: 35px;
+	background-color: blue;
+	color:white;
+	font-size: 15px;
+	margin-left:78%;
 }
-
-.sendmessages {
-	height: 500px;
-	width: 48%;
-	display:inline-block;
-	vertical-align: top;
-	text-align: center;
-
-}
-
-.form input{
-	width: 380px;
-	height: 50px;
-	display: inline-block;
-
-}
- button{
-	width: 50px;
-	height: 30px;
-	display: inline-block;
-
-}
-
-img{
-	max-width: 20px;
-	background-image:cover;
-
-}
-
 
 </style>
 
@@ -79,57 +63,59 @@ img{
 
 	<div class = "top">
 
-		CodingDojo Wall (Simplified)
+		<h1>CodingDojo Wall</h1>
 
-		<p>Welcome {{ name }}!</p> <a href="/logout">Logout</a>
+		<p>Welcome {{ name }}! &nbsp; &nbsp; &nbsp; <a href="/logout">log off</a></p>
+
 
 	</div>
 
 
-		<div class = "inbox">
+		<div class = "bottom">
 
-		<h>{{ totalreceivedmessages }} Message(s) for you {{ name }}</h>
+			<p>Post a message</p>
 
-		{% for message in messages %}
+			<textarea></textarea>
 
-		<p> {{ message["sender"] }} said ({{ message["date_created"]|duration_elapsed }}):<p>
-		<p> {{ message["message"] }} </p>
+			<button type = "submit" value="Submit">Post a message</button>
 
-		<a href = "/delete/{{ message['idmessages'] }}"><img src="{{ url_for('static', filename='img/asdf.png') }}">
-		</a>
+			{% for message in messages %}
+			<br>
 
-		{% endfor %}
+			<h>{{ message['first_name'] }} {{message['last_name']}} - {{message['date_created']}}
+			</h>
 
-	</div>
+			<ul>
+				<li>{{ message['message'] }}</li>
+			</ul>
+
+				{% for comment in comments %}
+
+					{% if message['idmessages'] == comment['message_id'] %}
+
+					<p></p>
+
+					<ul>{{ comment['first_name'] }} {{ comment['last_name'] }} {{comment['date_created']}}</ul>
+
+					<ul style = "list-style-type:none" >
+						<li>{{ comment['comment'] }}</li>
+					</ul>
+					{% endif %}
+
+					{% endfor %}
+
+
+			{% endfor %}
 
 
 
-	<div class = "sendmessages">
 
-		<h>Send a message</h>
 
-		<p>You have sent a total of {{ totalsentmessages }} messages so far.</p>
 
-		
-		{% for friend in friends %}
-
-		<form action="/sendmessage" method = "post">
-
-		<div class="form">
-
-		{{ friend["first_name"] }} <input type="text" name = "message"> 
-
-		<input type = "hidden" name = "recepientID" value = "{{ friend['idUsers'] }}"> 
-
-		<button type="submit"> Send</button>
 
 		</div>
 
-		</form>
 
-		{% endfor %}
-
-	</div>
 
 
 
