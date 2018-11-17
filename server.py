@@ -154,7 +154,7 @@ def login():
 			session['userid'] = result[0]['idUsers']
 			session["first_name"] = result[0]["first_name"]
 			session["loggedin"] = True
-			return redirect('/thewall')
+			return redirect('/books')
 	flash("This email login and password combination does not exist.","flashlogin")
 	return redirect("/")
 
@@ -168,82 +168,257 @@ def success():
 		flash("You must be logged in to enter this website.", "flashlogout")
 		return redirect ("/")
 	else:
-		return redirect ("/thewall")
+		return redirect ("/books")
 
-@app.route("/thewall")
+# @app.route("/thewall")
 
-def thewall():
+# def thewall():
 
 
-	#used for for loop in HTML to display all messages received from friends
-	mysql = connectToMySQL("mydb")
-	query = "select messages.idmessages, messages.message, users.first_name as sender, messages.date_created, timediff(Now(), messages.date_created) as timeago from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
+# 	#used for for loop in HTML to display all messages received from friends
+# 	mysql = connectToMySQL("mydb")
+# 	query = "select messages.idmessages, messages.message, users.first_name as sender, messages.date_created, timediff(Now(), messages.date_created) as timeago from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
 	
-	data = {
-	"sessionid" : session["userid"]
-	}
-	messages = mysql.query_db(query,data)
+# 	data = {
+# 	"sessionid" : session["userid"]
+# 	}
+# 	messages = mysql.query_db(query,data)
 
 
-	#counts number of messages received
-	mysql = connectToMySQL("mydb")
-	query = "select count(message) as Total  from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
-	data = {
-	"sessionid" : session["userid"]
-	}
-	totalreceivedmessages = mysql.query_db(query,data)
+# 	#counts number of messages received
+# 	mysql = connectToMySQL("mydb")
+# 	query = "select count(message) as Total  from messages inner join users on users.idUsers = messages.sender_id where messages.recepient_id = %(sessionid)s;"
+# 	data = {
+# 	"sessionid" : session["userid"]
+# 	}
+# 	totalreceivedmessages = mysql.query_db(query,data)
 	
-	#used for for statement to display all users in db on right side
+# 	#used for for statement to display all users in db on right side
+# 	mysql = connectToMySQL("mydb")
+# 	query = "select * from users where idUsers <> %(sessionid)s;"
+# 	data = {
+# 	"sessionid" : session["userid"]
+# 	}
+# 	friends = mysql.query_db(query,data)
+
+# 	#used for for statement to display total messages sent
+# 	mysql = connectToMySQL("mydb")
+# 	query = "select count(message) as Total from messages where sender_id = %(sessionid)s;"
+# 	data = {
+# 	"sessionid" : session["userid"]
+# 	}
+
+# 	totalsentmessages = mysql.query_db(query,data)
+
+# 	# querys a user's messages received from friends in a database
+
+# 	return render_template("thewall.html", name = session["first_name"],messages = messages, friends = friends, totalsentmessages = totalsentmessages[0]['Total'],totalreceivedmessages = totalreceivedmessages[0]['Total'] )
+
+# @app.route("/sendmessage", methods = ["POST"])
+
+# def send():
+
+# 	mysql = connectToMySQL('mydb')
+# 	query = "INSERT INTO messages (message,recepient_id,sender_id,date_created,last_updated) VALUES (%(message)s,%(recepient_id)s, %(sender_id)s, now(),now())"
+
+# 	data = {
+# 		'message': request.form["message"],
+# 		'recepient_id': request.form['recepientID'],
+# 		'sender_id': session['userid']
+# 		}
+# 	sendmessage = mysql.query_db(query,data)
+
+# 	return redirect("/thewall")
+
+# @app.route('/delete/<id>')
+
+# def delete(id):
+
+#     mysql = connectToMySQL('mydb')
+#     query = ("DELETE FROM messages WHERE (idmessages = %(del)s) and recepient_id = %(rid)s")
+#     data = {
+#         'del' : id,
+#         'rid':session['userid']
+#     }
+
+#     new_delete = mysql.query_db(query,data)
+
+#     return redirect('/thewall')
+@app.route("/books")
+
+def books():
+
 	mysql = connectToMySQL("mydb")
-	query = "select * from users where idUsers <> %(sessionid)s;"
-	data = {
-	"sessionid" : session["userid"]
-	}
-	friends = mysql.query_db(query,data)
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks order by reviews.date_created desc limit 3;"
+	reviews = mysql.query_db(query)
 
-	#used for for statement to display total messages sent
 	mysql = connectToMySQL("mydb")
-	query = "select count(message) as Total from messages where sender_id = %(sessionid)s;"
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks order by reviews.date_created asc limit 7;"
+	reviews2 = mysql.query_db(query)
+
+	if 'title' not in session:
+		session['title'] = ''
+		session['list'] = ''
+		session['author'] = ''
+		session['review'] = ''
+		session['rating'] = ''
+		session['idBooks'] = ''
+
+	return render_template('books.html', reviews = reviews, reviews2 = reviews2)
+
+@app.route("/add")
+
+def add():
+
+	mysql = connectToMySQL("mydb")
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks where reviews.idBooks = %(idBooks)s"
 	data = {
-	"sessionid" : session["userid"]
+	'idBooks': session['idBooks']
 	}
+	display = mysql.query_db(query,data)
 
-	totalsentmessages = mysql.query_db(query,data)
+	return render_template("add.html",display = display)
 
-	# querys a user's messages received from friends in a database
 
-	return render_template("thewall.html", name = session["first_name"],messages = messages, friends = friends, totalsentmessages = totalsentmessages[0]['Total'],totalreceivedmessages = totalreceivedmessages[0]['Total'] )
+@app.route("/review", methods = ["POST"])
 
-@app.route("/sendmessage", methods = ["POST"])
+def review():
 
-def send():
-
-	mysql = connectToMySQL('mydb')
-	query = "INSERT INTO messages (message,recepient_id,sender_id,date_created,last_updated) VALUES (%(message)s,%(recepient_id)s, %(sender_id)s, now(),now())"
-
+	mysql = connectToMySQL("mydb")		
+	query = "select * from users where title = %(title)s and author = %(author)s)"
 	data = {
-		'message': request.form["message"],
-		'recepient_id': request.form['recepientID'],
-		'sender_id': session['userid']
-		}
-	sendmessage = mysql.query_db(query,data)
+		'title':request.form['title'],
+		'author':request.form['author']
+	}
+	bookcheck = mysql.query_db(query,data)
 
-	return redirect("/thewall")
 
-@app.route('/delete/<id>')
+	if bookcheck == False:
+		if request.form['list'] == '':
+			mysql = connectToMySQL("mydb")
+			query = "insert into books (title,author) values (%(title)s, %(author)s)"
 
-def delete(id):
+			data = {
+			'title':request.form['title'],
+			'author':request.form['author']
+			}
+			insertbooks = mysql.query_db(query,data)
+		else:
+			mysql = connectToMySQL("mydb")
+			query = "insert into books (title,author) values (%(title)s, %(author)s)"
 
-    mysql = connectToMySQL('mydb')
-    query = ("DELETE FROM messages WHERE (idmessages = %(del)s) and recepient_id = %(rid)s")
-    data = {
-        'del' : id,
-        'rid':session['userid']
-    }
+			data = {
+			'title':request.form['title'],
+			'author':request.form['list']
+			}
+			insertbooks = mysql.query_db(query,data)
 
-    new_delete = mysql.query_db(query,data)
+	#insert into reviews table
+	mysql = connectToMySQL("mydb")		
+	query = "insert into reviews (ratings, review,idbooks,idusers,date_created,last_updated) values (%(ratings)s,%(reviews)s,%(idbooks)s,%(idUsers)s,now(),now())"	
+	data = {
+		'ratings': request.form['rating'],
+		'reviews': request.form['review'],
+		'idUsers': session['userid'],
+		'idbooks' : insertbooks
+	}
+	insertreview = mysql.query_db(query,data)
 
-    return redirect('/thewall')
+	session['idBooks'] = insertbooks
+
+	return redirect('/books2')
+
+@app.route("/processbook",methods = ["POST"])
+
+def processbook() :
+
+	session['idBooks'] = request.form['idBooks']
+
+	mysql = connectToMySQL("mydb")
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks where idBooks = %(idBooks)s;"
+	data = {
+		'idBooks':request.form['idBooks']
+	}
+	display = mysql.query_db(query)
+
+	return redirect("/books2")
+
+@app.route("/processbook2",methods = ["POST"])
+
+def processbook2() :
+
+	# insert books into db
+	print(session['idBooks'])
+	mysql = connectToMySQL("mydb")
+
+	query = "Insert into reviews (ratings,review,idbooks,idusers,date_created,last_updated) values (%(rating)s,%(review)s,%(idbooks)s,%(iduser)s,now(),now())"
+	data = {
+		'idbooks': session['idBooks'],
+		'review' : request.form['addreview'],
+		'rating' : request.form['rating'],
+		'iduser' : session['userid']
+	}
+	insert = mysql.query_db(query,data)
+	print(insert)
+
+	return redirect("/books2")
+
+
+@app.route("/books2")
+
+def exactbook():
+
+
+	# mysql = connectToMySQL("mydb")
+	# query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks order by reviews.date_created desc limit 3;"
+	# reviews = mysql.query_db(query)
+
+
+	mysql = connectToMySQL("mydb")
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks where reviews.idBooks = %(idBooks)s"
+	data = {
+		'idBooks': session['idBooks']
+
+	}
+	display = mysql.query_db(query,data)
+
+
+	return render_template("exactbook.html",display = display)
+
+
+@app.route("/books3/<id>")
+
+def exactbook2(id):
+
+	mysql = connectToMySQL("mydb")
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks where reviews.idBooks = %(idBooks)s"
+	data = {
+		'idBooks': id
+
+	}
+	display = mysql.query_db(query,data)
+	print(display)
+
+	session['idBooks'] = id
+
+
+	return render_template("exactbook.html",display = display)
+
+@app.route("/review/<id>")
+
+def review2(id):
+
+	mysql = connectToMySQL("mydb")
+	query = "select * from reviews inner join users on users.idUsers = reviews.idUsers inner join books on books.idbooks = reviews.idbooks where reviews.idUsers = %(iduser)s"
+	data = {
+		'iduser': id
+
+	}
+	display = mysql.query_db(query,data)
+
+	count=len(display)
+
+	return render_template("review.html",display = display,count =count)
 
 @app.route("/logout")
 
